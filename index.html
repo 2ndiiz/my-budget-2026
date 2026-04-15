@@ -88,11 +88,12 @@
   .table-scroll { overflow-x: auto; max-height: 600px;}
   table.pivot { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; }
   table.pivot th { background: var(--surface2); color: var(--text2); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; padding: 7px 10px; text-align: right; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10;}
-  table.pivot th:first-child, table.pivot th:nth-child(2), table.pivot th:nth-child(3), table.pivot th:nth-child(4), table.pivot th:nth-child(5) { text-align: left; }
+  /* จัดชิดซ้ายให้คอลัมน์ Activity ถึง Type (7 คอลัมน์แรก) */
+  table.pivot th:nth-child(-n+7) { text-align: left; }
   table.pivot td { padding: 6px 10px; text-align: right; border-bottom: 1px solid #f0ede6; vertical-align: top; color: var(--text); }
   table.pivot td.left { text-align: left; }
   table.pivot td.mono { font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
-  table.pivot tr.forecast-row td { color: var(--blue); background: #fcfbf9; } /* ให้ Forecast เด่นขึ้นมานิดนึง */
+  table.pivot tr.forecast-row td { color: var(--blue); background: #fcfbf9; } 
   table.pivot tr.actual-row td { color: var(--green); }
   table.pivot tr:hover td { background: var(--blue-light); }
   
@@ -166,10 +167,7 @@ function extractSheetId(url) {
   return m ? m[1] : null;
 }
 
-function fmtN(v) {
-  if (v === 0) return '—';
-  return Math.round(v).toLocaleString('th-TH');
-}
+function fmtN(v) { return v === 0 ? '—' : Math.round(v).toLocaleString('th-TH'); }
 function fmtM(v) {
   if (v === 0) return '—';
   const a = Math.abs(v);
@@ -249,13 +247,13 @@ function populateFilters() {
     if (vals.includes(cur)) sel.value = cur;
   };
   setOpts('fAC', getUniq('Activity Code'));
-  setOpts('fBA', getUniq('Budget Account')); // อัปเดต Filter BA
+  setOpts('fBA', getUniq('Budget Account'));
   setOpts('fUser', getUniq('User'));
 }
 
 function getFiltered() {
   const ac = document.getElementById('fAC').value;
-  const ba = document.getElementById('fBA').value; // ดึงค่าจาก Filter BA
+  const ba = document.getElementById('fBA').value;
   const cat = document.getElementById('fCat').value;
   const user = document.getElementById('fUser').value;
   const type = document.getElementById('fType').value;
@@ -311,35 +309,47 @@ function renderKPIs(data) {
 function renderChart(data) {
   const fcVals = sumByMonth(data, 'Forecast', 'Amount');
   const acVals = sumByMonth(data, 'Actual', 'Amount');
+  
+  // 🔥 คำนวณเปอร์เซ็นต์สำหรับเส้น Utilization
+  const varPct = fcVals.map((f, i) => f > 0 ? (acVals[i] / f * 100).toFixed(1) : 0);
 
   if (barChart) barChart.destroy();
   const ctx = document.getElementById('barChart').getContext('2d');
   barChart = new Chart(ctx, {
-    type: 'bar',
     data: {
       labels: MLABELS,
       datasets: [
-        { label: 'Forecast', data: fcVals, backgroundColor: 'rgba(26,86,160,0.7)', borderRadius: 3, barPercentage: 0.85, categoryPercentage: 0.7 },
-        { label: 'Actual', data: acVals, backgroundColor: 'rgba(13,122,95,0.75)', borderRadius: 3, barPercentage: 0.85, categoryPercentage: 0.7 },
+        // เพิ่มกราฟเส้น
+        { type: 'line', label: 'Utilization %', data: varPct, borderColor: '#b45309', yAxisID: 'yPct', tension: 0.3, pointRadius: 4, borderWidth: 2 },
+        // กราฟแท่งเดิม
+        { type: 'bar', label: 'Forecast', data: fcVals, backgroundColor: 'rgba(26,86,160,0.7)', borderRadius: 3, barPercentage: 0.85, categoryPercentage: 0.7, yAxisID: 'yAmt' },
+        { type: 'bar', label: 'Actual', data: acVals, backgroundColor: 'rgba(13,122,95,0.75)', borderRadius: 3, barPercentage: 0.85, categoryPercentage: 0.7, yAxisID: 'yAmt' }
       ]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ฿${Math.round(c.raw).toLocaleString()}` } }
+        tooltip: { 
+          callbacks: { 
+            // ให้ Tooltip โชว์หน่วยเป็น % ถ้าเป็นเส้น และ ฿ ถ้าเป็นแท่ง
+            label: c => ` ${c.dataset.label}: ${c.dataset.type === 'line' ? c.raw + '%' : '฿'+Math.round(c.raw).toLocaleString()}` 
+          } 
+        }
       },
       scales: {
         x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#888' }, border: { display: false } },
-        y: { grid: { color: 'rgba(0,0,0,0.05)' }, border: { display: false }, ticks: { font: { size: 10 }, color: '#888', callback: v => fmtM(v) } }
+        yAmt: { type: 'linear', position: 'left', grid: { color: 'rgba(0,0,0,0.05)' }, border: { display: false }, ticks: { font: { size: 10 }, color: '#888', callback: v => fmtM(v) } },
+        // เพิ่มแกน Y ด้านขวาสำหรับตัวเลขเปอร์เซ็นต์
+        yPct: { type: 'linear', position: 'right', min: 0, grid: { drawOnChartArea: false }, border: { display: false }, ticks: { font: { size: 10 }, color: '#b45309', callback: v => v + '%' } }
       }
     }
   });
 }
 
 function renderDonut(data) {
-  const opex = data.filter(r => r['Category (OPEX/CAPEX)'] === 'OPEX').reduce((s,r) => s + (parseFloat(r['Amount']) || 0), 0);
-  const capex = data.filter(r => r['Category (OPEX/CAPEX)'] === 'CAPEX').reduce((s,r) => s + (parseFloat(r['Amount']) || 0), 0);
+  const opex = data.filter(r => r['Category (OPEX/CAPEX)'] === 'OPEX').reduce((s,r) => s + (parseFloat(r['Amount']) || parseFloat(r['Forecast']) || parseFloat(r['Actual']) || 0), 0);
+  const capex = data.filter(r => r['Category (OPEX/CAPEX)'] === 'CAPEX').reduce((s,r) => s + (parseFloat(r['Amount']) || parseFloat(r['Forecast']) || parseFloat(r['Actual']) || 0), 0);
   const total = opex + capex;
   const opexP = total > 0 ? ((opex/total)*100).toFixed(1) : 0;
   const capexP = total > 0 ? ((capex/total)*100).toFixed(1) : 0;
@@ -359,7 +369,6 @@ function renderDonut(data) {
     }
   });
 
-  // แก้บั๊ก Legend ให้แสดงสัดส่วนเหมือนเดิมเป๊ะ
   const legendEl = document.getElementById('donutLegend');
   if(legendEl) {
     legendEl.innerHTML = `
@@ -370,7 +379,6 @@ function renderDonut(data) {
 }
 
 function renderTable(data) {
-  // 🔥 การจัดกลุ่มที่ถูกต้อง: จัดกลุ่มตาม Activity Code + Budget Account
   const groups = {};
   data.forEach(r => {
     const ac = r['Activity Code'] || '—';
@@ -380,12 +388,14 @@ function renderTable(data) {
     groups[accKey].push(r);
   });
 
+  // 🔥 อัปเดตโครงสร้างตาราง: เพิ่มคอลัมน์ Status เข้าไป
   let html = `<table class="pivot">
     <thead><tr>
       <th class="left" style="min-width:85px;">Activity</th>
       <th class="left" style="min-width:90px;">Account</th>
       <th class="left" style="min-width:55px;">Cat</th>
       <th class="left" style="min-width:60px;">User</th>
+      <th class="left" style="min-width:60px;">Status</th>
       <th class="left" style="min-width:180px;">Description</th>
       <th class="left" style="min-width:70px;">Type</th>
       ${MLABELS.map(m => `<th style="min-width:68px;">${m}</th>`).join('')}
@@ -397,20 +407,21 @@ function renderTable(data) {
 
   sortedKeys.forEach(accKey => {
     const rows = groups[accKey];
-
-    // แตกข้อมูลในแต่ละกลุ่มออกเป็นบรรทัดใครบรรทัดมัน โดยแยกตาม Type, User, Description
     const lines = {};
+    
     rows.forEach(r => {
       const type = r['Type'] || '—';
       const user = r['User'] || '—';
+      const status = r['Status'] || '—'; // 🔥 ดึงข้อมูล Status
       const desc = r['Description'] || '—';
       const cat = r['Category (OPEX/CAPEX)'] || '—';
       
-      const lineKey = `${type}||${user}||${desc}||${cat}`;
+      // 🔥 จับกลุ่มบรรทัดโดยเอา Status มาร่วมวงด้วย
+      const lineKey = `${type}||${user}||${status}||${desc}||${cat}`;
       if (!lines[lineKey]) {
         lines[lineKey] = {
           ac: r['Activity Code'] || '—', ba: r['Budget Account'] || '—',
-          cat, user, desc, type, months: {}
+          cat, user, status, desc, type, months: {}
         };
         MONTHS.forEach(m => lines[lineKey].months[m] = 0);
       }
@@ -418,13 +429,11 @@ function renderTable(data) {
     });
 
     const allLines = Object.values(lines);
-    // แยก Forecast (ให้อยู่บรรทัดบนสุด) และ Actual (ให้อยู่บรรทัดล่างๆ)
     const fcLines = allLines.filter(l => l.type === 'Forecast');
     const acLines = allLines.filter(l => l.type !== 'Forecast');
 
     const renderLine = (l, isFc) => {
       const total = Object.values(l.months).reduce((a,b)=>a+b, 0);
-      // ข้าม Actual ที่ไม่มีค่าใช้จ่ายเลย จะได้ไม่รกตาราง
       if(total === 0 && !isFc) return; 
 
       const baFmt = String(l.ba).replace(/\.0$/, '').replace(/(\d+)\.?\d*E\+?(\d+)/, (_, m, e) => String(parseInt(m) * Math.pow(10, parseInt(e)-7)));
@@ -435,7 +444,7 @@ function renderTable(data) {
         <td class="left mono">${baFmt}</td>
         <td class="left">${catHtml}</td>
         <td class="left">${l.user}</td>
-        <td class="left"><div class="desc-cell">${l.desc}</div></td>
+        <td class="left">${l.status}</td> <td class="left"><div class="desc-cell">${l.desc}</div></td>
         <td class="left"><span class="type-badge ${isFc ? 'type-fc' : 'type-ac'}">${l.type}</span></td>
         ${MONTHS.map(m => `<td class="mono" style="text-align:right">${l.months[m] ? fmtN(l.months[m]) : '—'}</td>`).join('')}
         <td class="mono" style="text-align:right; font-weight:600">${fmtN(total)}</td>
@@ -458,6 +467,7 @@ function renderApp() {
         <div class="card-header">
           <span class="card-title">Forecast vs Actual รายเดือน</span>
           <div class="legend">
+            <div class="leg"><span class="leg-dot" style="background:#b45309; height:3px; width:12px;"></span>Util %</div>
             <div class="leg"><span class="leg-dot" style="background:#1a56a0;"></span>Forecast</div>
             <div class="leg"><span class="leg-dot" style="background:#0d7a5f;"></span>Actual</div>
           </div>
