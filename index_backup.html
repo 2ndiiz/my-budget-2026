@@ -29,76 +29,24 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'IBM Plex Sans Thai', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    font-size: 14px;
-    min-height: 100vh;
-  }
+  body { font-family: 'IBM Plex Sans Thai', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; min-height: 100vh; }
 
   /* ── Header ── */
-  .header {
-    background: var(--text);
-    color: #fff;
-    padding: 18px 28px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
+  .header { background: var(--text); color: #fff; padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
   .header-left { display: flex; align-items: baseline; gap: 14px; }
   .header-title { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
   .header-sub { font-size: 12px; color: rgba(255,255,255,0.45); font-family: 'IBM Plex Mono', monospace; }
   .header-right { display: flex; align-items: center; gap: 10px; }
-  #loadBtn {
-    background: var(--blue);
-    color: #fff;
-    border: none;
-    padding: 7px 16px;
-    border-radius: var(--radius);
-    font-size: 13px;
-    font-family: inherit;
-    cursor: pointer;
-    font-weight: 500;
-    transition: opacity .15s;
-  }
+  #loadBtn { background: var(--blue); color: #fff; border: none; padding: 7px 16px; border-radius: var(--radius); font-size: 13px; font-family: inherit; cursor: pointer; font-weight: 500; transition: opacity .15s; }
   #loadBtn:hover { opacity: .85; }
-  #statusBadge {
-    font-size: 11px;
-    font-family: 'IBM Plex Mono', monospace;
-    padding: 4px 10px;
-    border-radius: 99px;
-    background: rgba(255,255,255,0.1);
-    color: rgba(255,255,255,0.6);
-  }
+  #statusBadge { font-size: 11px; font-family: 'IBM Plex Mono', monospace; padding: 4px 10px; border-radius: 99px; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); }
   #statusBadge.ok { background: #14532d22; color: #4ade80; border: 1px solid #4ade8044; }
   #statusBadge.err { background: #7f1d1d22; color: #f87171; border: 1px solid #f8717144; }
 
   /* ── Filters ── */
-  .filters {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 12px 28px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: center;
-  }
+  .filters { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 28px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
   .filter-label { font-size: 12px; color: var(--text3); font-weight: 500; text-transform: uppercase; letter-spacing: .5px; }
-  select {
-    font-family: inherit;
-    font-size: 13px;
-    padding: 6px 10px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--surface);
-    color: var(--text);
-    cursor: pointer;
-    min-width: 130px;
-  }
+  select { font-family: inherit; font-size: 13px; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); cursor: pointer; min-width: 130px; }
   select:focus { outline: 2px solid var(--blue); outline-offset: 1px; }
   .filter-sep { width: 1px; height: 22px; background: var(--border); margin: 0 4px; }
 
@@ -107,25 +55,13 @@
 
   /* ── KPI row ── */
   .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
-  .kpi {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 14px 16px;
-  }
+  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; }
   .kpi-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
   .kpi-value { font-size: 22px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; letter-spacing: -1px; }
   .kpi-value.blue { color: var(--blue); }
   .kpi-value.green { color: var(--green); }
   .kpi-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
-  .kpi-badge {
-    display: inline-block;
-    font-size: 11px;
-    padding: 2px 9px;
-    border-radius: 99px;
-    font-weight: 500;
-    font-family: 'IBM Plex Mono', monospace;
-  }
+  .kpi-badge { display: inline-block; font-size: 11px; padding: 2px 9px; border-radius: 99px; font-weight: 500; font-family: 'IBM Plex Mono', monospace; }
   .badge-over { background: var(--red-light); color: var(--red); }
   .badge-under { background: var(--green-light); color: var(--green); }
   .badge-zero { background: var(--surface2); color: var(--text3); }
@@ -135,20 +71,8 @@
   @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
 
   /* ── Cards ── */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-  }
-  .card-header {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-  }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+  .card-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .card-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .6px; color: var(--text2); }
   .card-body { padding: 16px; }
 
@@ -161,114 +85,32 @@
   .leg-dot { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
 
   /* ── Pivot table ── */
-  .table-scroll { overflow-x: auto; }
-  table.pivot {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12px;
-    white-space: nowrap;
-  }
-  table.pivot th {
-    background: var(--surface2);
-    color: var(--text2);
-    font-weight: 600;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: .4px;
-    padding: 7px 10px;
-    text-align: right;
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-  }
-  table.pivot th:first-child, table.pivot th:nth-child(2), table.pivot th:nth-child(3), table.pivot th:nth-child(4), table.pivot th:nth-child(5) { text-align: left; }
-  table.pivot td {
-    padding: 6px 10px;
-    text-align: right;
-    border-bottom: 1px solid #f0ede6;
-    vertical-align: top;
-    color: var(--text);
-  }
+  .table-scroll { overflow-x: auto; max-height: 600px;}
+  table.pivot { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; }
+  table.pivot th { background: var(--surface2); color: var(--text2); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; padding: 7px 10px; text-align: right; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10;}
+  /* จัดชิดซ้ายให้คอลัมน์ Activity ถึง Type (7 คอลัมน์แรก) */
+  table.pivot th:nth-child(-n+7) { text-align: left; }
+  table.pivot td { padding: 6px 10px; text-align: right; border-bottom: 1px solid #f0ede6; vertical-align: top; color: var(--text); }
   table.pivot td.left { text-align: left; }
   table.pivot td.mono { font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
-  table.pivot tr.group-row td {
-    background: #f7f6f1;
-    font-weight: 600;
-    font-size: 12px;
-    border-top: 1px solid var(--border);
-  }
-  table.pivot tr.forecast-row td { color: var(--blue); }
+  table.pivot tr.forecast-row td { color: var(--blue); background: #fcfbf9; } 
   table.pivot tr.actual-row td { color: var(--green); }
   table.pivot tr:hover td { background: var(--blue-light); }
-  table.pivot tr.group-row:hover td { background: #eeecea; }
-  .type-badge {
-    display: inline-block;
-    font-size: 10px;
-    padding: 1px 7px;
-    border-radius: 99px;
-    font-weight: 500;
-  }
+  
+  .type-badge { display: inline-block; font-size: 10px; padding: 1px 7px; border-radius: 99px; font-weight: 500; }
   .type-fc { background: var(--blue-light); color: var(--blue); }
   .type-ac { background: var(--green-light); color: var(--green); }
   .cat-opex { background: var(--amber-light); color: var(--amber); font-size: 10px; padding: 1px 6px; border-radius: 99px; }
   .cat-capex { background: #f3e8ff; color: #7c3aed; font-size: 10px; padding: 1px 6px; border-radius: 99px; }
-  .desc-cell { max-width: 220px; white-space: normal; line-height: 1.4; font-size: 12px; }
-  .var-neg { color: var(--red); }
-  .var-pos { color: var(--green); }
+  .desc-cell { max-width: 250px; white-space: normal; line-height: 1.4; font-size: 12px; }
 
   /* ── Loading state ── */
-  .loading-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--text3);
-  }
-  .loading-state .icon { font-size: 32px; margin-bottom: 12px; }
-  .spinner {
-    display: inline-block;
-    width: 20px; height: 20px;
-    border: 2px solid var(--border);
-    border-top-color: var(--blue);
-    border-radius: 50%;
-    animation: spin .7s linear infinite;
-    margin: 0 auto 12px;
-  }
+  .loading-state { text-align: center; padding: 60px 20px; color: var(--text3); }
+  .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin .7s linear infinite; margin-bottom: 12px; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ── Bar mini ── */
-  .bar-mini-wrap { display: flex; align-items: center; gap: 6px; }
-  .bar-mini-bg { flex: 1; height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
-  .bar-mini-fill { height: 100%; border-radius: 2px; transition: width .4s; }
-
-  /* ── Sheet url input ── */
-  .url-input-wrap {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: var(--radius);
-    padding: 4px 4px 4px 12px;
-    min-width: 320px;
-  }
-  .url-input {
-    background: transparent;
-    border: none;
-    color: rgba(255,255,255,0.8);
-    font-size: 12px;
-    font-family: 'IBM Plex Mono', monospace;
-    flex: 1;
-    min-width: 0;
-    outline: none;
-  }
-  .url-input::placeholder { color: rgba(255,255,255,0.3); }
-
-  /* responsive */
-  @media (max-width: 600px) {
-    .main { padding: 14px 14px; }
-    .filters { padding: 10px 14px; }
-    .header { padding: 14px 14px; }
-    .url-input-wrap { min-width: 0; flex: 1; }
-  }
+  .url-input-wrap { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: var(--radius); padding: 4px 4px 4px 12px; min-width: 320px; }
+  .url-input { background: transparent; border: none; color: rgba(255,255,255,0.8); font-size: 12px; font-family: 'IBM Plex Mono', monospace; flex: 1; min-width: 0; outline: none; }
 </style>
 </head>
 <body>
@@ -290,13 +132,13 @@
 <div class="filters">
   <span class="filter-label">Filter</span>
   <select id="fAC" onchange="applyFilters()"><option value="">Activity Code ทั้งหมด</option></select>
+  <select id="fBA" onchange="applyFilters()"><option value="">Budget Account ทั้งหมด</option></select>
   <select id="fCat" onchange="applyFilters()">
     <option value="">OPEX + CAPEX</option>
     <option value="OPEX">OPEX เท่านั้น</option>
     <option value="CAPEX">CAPEX เท่านั้น</option>
   </select>
   <select id="fUser" onchange="applyFilters()"><option value="">User ทั้งหมด</option></select>
-  <select id="fStatus" onchange="applyFilters()"><option value="">Status ทั้งหมด</option></select>
   <div class="filter-sep"></div>
   <select id="fType" onchange="applyFilters()">
     <option value="">Forecast + Actual</option>
@@ -309,7 +151,7 @@
   <div id="appContent">
     <div class="loading-state">
       <div class="spinner"></div>
-      <div style="font-weight:500; margin-bottom:6px;">กำลังเชื่อมต่อฐานข้อมูล...</div>
+      <div style="font-weight:500; margin-bottom:6px;">กำลังดึงข้อมูลจาก Google Sheets...</div>
     </div>
   </div>
 </div>
@@ -325,10 +167,7 @@ function extractSheetId(url) {
   return m ? m[1] : null;
 }
 
-function fmtN(v) {
-  if (v === 0) return '—';
-  return Math.round(v).toLocaleString('th-TH');
-}
+function fmtN(v) { return v === 0 ? '—' : Math.round(v).toLocaleString('th-TH'); }
 function fmtM(v) {
   if (v === 0) return '—';
   const a = Math.abs(v);
@@ -347,32 +186,25 @@ async function loadData() {
   btn.textContent = '…กำลังโหลด';
   btn.disabled = true;
   setStatus('กำลังโหลด…', '');
-  
-  // โชว์ Loading สวยๆ ระหว่างรอดึงข้อมูล
-  document.getElementById('appContent').innerHTML = '<div class="loading-state"><div class="spinner"></div><div style="margin-top:10px;">กำลังดึงข้อมูลจาก Google Sheets…</div></div>';
 
   const apiUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Alldata`;
 
   try {
     const res = await fetch(apiUrl);
     const text = await res.text();
-    
-    // 🔥 จุดที่แก้ให้ทนทาน: เปลี่ยนวิธีตัด String ให้รัดกุมขึ้น จะได้ไม่พลาดพังบน GitHub
     const jsonString = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
     const json = JSON.parse(jsonString);
     
     RAW = parseGViz(json);
     setStatus(`✓ ${RAW.length} rows`, 'ok');
     
-    renderApp(); // วาดโครงขึ้นมาก่อน
+    renderApp(); 
     populateFilters();
     applyFilters();
   } catch(e) {
-    console.error("Error loading data:", e);
     setStatus('โหลดไม่ได้ — ตรวจสอบ share settings', 'err');
     document.getElementById('appContent').innerHTML = `<div class="loading-state"><div style="font-size:24px;">⚠️</div><div style="margin-bottom:6px;font-weight:500;">ดึงข้อมูลไม่ได้</div><div style="font-size:12px;color:var(--text3);">ตรวจสอบว่า Google Sheet เปิด "Anyone with the link can view"<br>แล้วลองกด "โหลดข้อมูล" อีกครั้ง</div></div>`;
   }
-  
   btn.textContent = '⟳ โหลดข้อมูล';
   btn.disabled = false;
 }
@@ -393,8 +225,6 @@ function parseGViz(json) {
     cols.forEach((c, i) => {
       const cell = r.c[i];
       let val = cell ? (cell.v !== null ? cell.v : '') : '';
-      
-      // ล้างคอมม่าให้เรียบร้อย
       if (typeof val === 'string' && (c === 'Amount' || c === 'Forecast' || c === 'Actual')) {
         val = val.replace(/,/g, '');
       }
@@ -403,15 +233,12 @@ function parseGViz(json) {
 
     if (row['Amount'] && !row['Forecast'] && row['Type'] === 'Forecast') row['Forecast'] = row['Amount'];
     if (row['Amount'] && !row['Actual'] && row['Type'] === 'Actual') row['Actual'] = row['Amount'];
-
     return row;
   }).filter(r => r['Activity Code']);
 }
 
 function populateFilters() {
-  const acs = [...new Set(RAW.map(r => r['Activity Code']).filter(Boolean))].sort();
-  const users = [...new Set(RAW.map(r => r['User']).filter(Boolean))].sort();
-  const statuses = [...new Set(RAW.map(r => r['Status']).filter(Boolean))].sort();
+  const getUniq = (key) => [...new Set(RAW.map(r => r[key]).filter(Boolean))].sort();
   const setOpts = (id, vals) => {
     const sel = document.getElementById(id);
     const cur = sel.value;
@@ -419,22 +246,23 @@ function populateFilters() {
     vals.forEach(v => { const o = document.createElement('option'); o.value = v; o.text = v; sel.appendChild(o); });
     if (vals.includes(cur)) sel.value = cur;
   };
-  setOpts('fAC', acs);
-  setOpts('fUser', users);
-  setOpts('fStatus', statuses);
+  setOpts('fAC', getUniq('Activity Code'));
+  setOpts('fBA', getUniq('Budget Account'));
+  setOpts('fUser', getUniq('User'));
 }
 
 function getFiltered() {
   const ac = document.getElementById('fAC').value;
+  const ba = document.getElementById('fBA').value;
   const cat = document.getElementById('fCat').value;
   const user = document.getElementById('fUser').value;
-  const status = document.getElementById('fStatus').value;
   const type = document.getElementById('fType').value;
+  
   return RAW.filter(r =>
     (!ac || r['Activity Code'] === ac) &&
+    (!ba || String(r['Budget Account']) === ba) &&
     (!cat || r['Category (OPEX/CAPEX)'] === cat) &&
     (!user || r['User'] === user) &&
-    (!status || r['Status'] === status) &&
     (!type || r['Type'] === type)
   );
 }
@@ -453,14 +281,14 @@ function sumByMonth(data, typeVal, amtField) {
   MONTHS.forEach(m => out[m] = 0);
   data.filter(r => !typeVal || r['Type'] === typeVal).forEach(r => {
     const m = r['Month'];
-    if (out[m] !== undefined) out[m] += parseFloat(r[amtField]) || 0;
+    if (out[m] !== undefined) out[m] += parseFloat(r[amtField] || r['Amount']) || 0;
   });
   return MONTHS.map(m => out[m]);
 }
 
 function renderKPIs(data) {
-  const fc = data.filter(r => r['Type'] === 'Forecast').reduce((s, r) => s + (parseFloat(r['Forecast']) || 0), 0);
-  const ac = data.filter(r => r['Type'] === 'Actual').reduce((s, r) => s + (parseFloat(r['Actual']) || 0), 0);
+  const fc = data.filter(r => r['Type'] === 'Forecast').reduce((s, r) => s + (parseFloat(r['Forecast'] || r['Amount']) || 0), 0);
+  const ac = data.filter(r => r['Type'] === 'Actual').reduce((s, r) => s + (parseFloat(r['Actual'] || r['Amount']) || 0), 0);
   const variance = ac - fc;
   const pct = fc > 0 ? ((ac / fc) * 100).toFixed(1) : '0.0';
   const varBadge = variance > 0
@@ -479,32 +307,41 @@ function renderKPIs(data) {
 }
 
 function renderChart(data) {
-  const fcVals = sumByMonth(data, 'Forecast', 'Forecast');
-  const acVals = sumByMonth(data, 'Actual', 'Actual');
+  const fcVals = sumByMonth(data, 'Forecast', 'Amount');
+  const acVals = sumByMonth(data, 'Actual', 'Amount');
+  
+  // 🔥 คำนวณเปอร์เซ็นต์สำหรับเส้น Utilization
+  const varPct = fcVals.map((f, i) => f > 0 ? (acVals[i] / f * 100).toFixed(1) : 0);
 
   if (barChart) barChart.destroy();
   const ctx = document.getElementById('barChart').getContext('2d');
   barChart = new Chart(ctx, {
-    type: 'bar',
     data: {
       labels: MLABELS,
       datasets: [
-        { label: 'Forecast', data: fcVals, backgroundColor: 'rgba(26,86,160,0.7)', borderRadius: 3, barPercentage: 0.85, categoryPercentage: 0.7 },
-        { label: 'Actual', data: acVals, backgroundColor: 'rgba(13,122,95,0.75)', borderRadius: 3, barPercentage: 0.85, categoryPercentage: 0.7 },
+        // เพิ่มกราฟเส้น
+        { type: 'line', label: 'Utilization %', data: varPct, borderColor: '#b45309', yAxisID: 'yPct', tension: 0.3, pointRadius: 4, borderWidth: 2 },
+        // กราฟแท่งเดิม
+        { type: 'bar', label: 'Forecast', data: fcVals, backgroundColor: 'rgba(26,86,160,0.7)', borderRadius: 3, barPercentage: 0.85, categoryPercentage: 0.7, yAxisID: 'yAmt' },
+        { type: 'bar', label: 'Actual', data: acVals, backgroundColor: 'rgba(13,122,95,0.75)', borderRadius: 3, barPercentage: 0.85, categoryPercentage: 0.7, yAxisID: 'yAmt' }
       ]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ฿${Math.round(c.raw).toLocaleString()}` } }
+        tooltip: { 
+          callbacks: { 
+            // ให้ Tooltip โชว์หน่วยเป็น % ถ้าเป็นเส้น และ ฿ ถ้าเป็นแท่ง
+            label: c => ` ${c.dataset.label}: ${c.dataset.type === 'line' ? c.raw + '%' : '฿'+Math.round(c.raw).toLocaleString()}` 
+          } 
+        }
       },
       scales: {
         x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#888' }, border: { display: false } },
-        y: {
-          grid: { color: 'rgba(0,0,0,0.05)' }, border: { display: false },
-          ticks: { font: { size: 10 }, color: '#888', callback: v => fmtM(v) }
-        }
+        yAmt: { type: 'linear', position: 'left', grid: { color: 'rgba(0,0,0,0.05)' }, border: { display: false }, ticks: { font: { size: 10 }, color: '#888', callback: v => fmtM(v) } },
+        // เพิ่มแกน Y ด้านขวาสำหรับตัวเลขเปอร์เซ็นต์
+        yPct: { type: 'linear', position: 'right', min: 0, grid: { drawOnChartArea: false }, border: { display: false }, ticks: { font: { size: 10 }, color: '#b45309', callback: v => v + '%' } }
       }
     }
   });
@@ -528,39 +365,37 @@ function renderDonut(data) {
     options: {
       responsive: true, maintainAspectRatio: false,
       cutout: '68%',
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: c => ` ${c.label}: ฿${Math.round(c.raw).toLocaleString()} (${c.label === 'OPEX' ? opexP : capexP}%)` } }
-      }
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ` ${c.label}: ฿${Math.round(c.raw).toLocaleString()} (${c.label === 'OPEX' ? opexP : capexP}%)` } } }
     }
   });
 
-  document.getElementById('donutLegend').innerHTML = `
-    <div class="leg"><span class="leg-dot" style="background:#b45309;"></span>OPEX ${opexP}% — ${fmtM(opex)}</div>
-    <div class="leg"><span class="leg-dot" style="background:#7c3aed;"></span>CAPEX ${capexP}% — ${fmtM(capex)}</div>
-  `;
+  const legendEl = document.getElementById('donutLegend');
+  if(legendEl) {
+    legendEl.innerHTML = `
+      <div class="leg"><span class="leg-dot" style="background:#b45309;"></span>OPEX ${opexP}% — ${fmtM(opex)}</div>
+      <div class="leg"><span class="leg-dot" style="background:#7c3aed;"></span>CAPEX ${capexP}% — ${fmtM(capex)}</div>
+    `;
+  }
 }
 
 function renderTable(data) {
-  // Group by ActivityCode > BudgetAccount > Type
   const groups = {};
   data.forEach(r => {
     const ac = r['Activity Code'] || '—';
     const ba = r['Budget Account'] || '—';
-    const type = r['Type'] || '—';
-    const key = `${ac}||${ba}`;
-    if (!groups[key]) groups[key] = { ac, ba, cat: r['Category (OPEX/CAPEX)'], rows: [] };
-    groups[key].rows.push(r);
+    const accKey = `${ac}||${ba}`;
+    if (!groups[accKey]) groups[accKey] = [];
+    groups[accKey].push(r);
   });
 
-  // Build monthly totals per group per type
+  // 🔥 อัปเดตโครงสร้างตาราง: เพิ่มคอลัมน์ Status เข้าไป
   let html = `<table class="pivot">
     <thead><tr>
       <th class="left" style="min-width:85px;">Activity</th>
-      <th class="left" style="min-width:90px;">Budget Acct</th>
+      <th class="left" style="min-width:90px;">Account</th>
       <th class="left" style="min-width:55px;">Cat</th>
       <th class="left" style="min-width:60px;">User</th>
-      <th class="left" style="min-width:55px;">Status</th>
+      <th class="left" style="min-width:60px;">Status</th>
       <th class="left" style="min-width:180px;">Description</th>
       <th class="left" style="min-width:70px;">Type</th>
       ${MLABELS.map(m => `<th style="min-width:68px;">${m}</th>`).join('')}
@@ -568,60 +403,56 @@ function renderTable(data) {
     </tr></thead><tbody>`;
 
   const sortedKeys = Object.keys(groups).sort();
+  const filterType = document.getElementById('fType').value;
 
-  sortedKeys.forEach(key => {
-    const g = groups[key];
-    // Collect unique descriptions & users in this group
-    const descSet = [...new Set(g.rows.map(r => r['Description']).filter(Boolean))];
-    const userSet = [...new Set(g.rows.map(r => r['User']).filter(Boolean))];
-    const statusSet = [...new Set(g.rows.map(r => r['Status']).filter(Boolean))];
-
-    // Forecast totals by month
-    const fcMap = {}; const acMap = {};
-    MONTHS.forEach(m => { fcMap[m] = 0; acMap[m] = 0; });
-    g.rows.forEach(r => {
-      const m = r['Month'];
-      if (r['Type'] === 'Forecast') fcMap[m] = (fcMap[m] || 0) + (parseFloat(r['Forecast']) || 0);
-      if (r['Type'] === 'Actual') acMap[m] = (acMap[m] || 0) + (parseFloat(r['Actual']) || 0);
+  sortedKeys.forEach(accKey => {
+    const rows = groups[accKey];
+    const lines = {};
+    
+    rows.forEach(r => {
+      const type = r['Type'] || '—';
+      const user = r['User'] || '—';
+      const status = r['Status'] || '—'; // 🔥 ดึงข้อมูล Status
+      const desc = r['Description'] || '—';
+      const cat = r['Category (OPEX/CAPEX)'] || '—';
+      
+      // 🔥 จับกลุ่มบรรทัดโดยเอา Status มาร่วมวงด้วย
+      const lineKey = `${type}||${user}||${status}||${desc}||${cat}`;
+      if (!lines[lineKey]) {
+        lines[lineKey] = {
+          ac: r['Activity Code'] || '—', ba: r['Budget Account'] || '—',
+          cat, user, status, desc, type, months: {}
+        };
+        MONTHS.forEach(m => lines[lineKey].months[m] = 0);
+      }
+      lines[lineKey].months[r['Month']] += (parseFloat(r['Amount']) || 0);
     });
 
-    const fcTotal = Object.values(fcMap).reduce((a,b) => a+b, 0);
-    const acTotal = Object.values(acMap).reduce((a,b) => a+b, 0);
-    const hasFc = fcTotal > 0;
-    const hasAc = acTotal > 0;
+    const allLines = Object.values(lines);
+    const fcLines = allLines.filter(l => l.type === 'Forecast');
+    const acLines = allLines.filter(l => l.type !== 'Forecast');
 
-    const catHtml = g.cat === 'OPEX' ? '<span class="cat-opex">OPEX</span>' : g.cat === 'CAPEX' ? '<span class="cat-capex">CAPEX</span>' : g.cat;
-    const descHtml = `<div class="desc-cell">${descSet.join('<br>')}</div>`;
-    const baFmt = String(g.ba).replace(/\.0$/, '').replace(/(\d+)\.?\d*E\+?(\d+)/, (_, m, e) => String(parseInt(m) * Math.pow(10, parseInt(e)-7)));
+    const renderLine = (l, isFc) => {
+      const total = Object.values(l.months).reduce((a,b)=>a+b, 0);
+      if(total === 0 && !isFc) return; 
 
-    const fType = document.getElementById('fType').value;
+      const baFmt = String(l.ba).replace(/\.0$/, '').replace(/(\d+)\.?\d*E\+?(\d+)/, (_, m, e) => String(parseInt(m) * Math.pow(10, parseInt(e)-7)));
+      const catHtml = l.cat === 'OPEX' ? '<span class="cat-opex">OPEX</span>' : l.cat === 'CAPEX' ? '<span class="cat-capex">CAPEX</span>' : l.cat;
 
-    if (hasFc && fType !== 'Actual') {
-      html += `<tr class="forecast-row">
-        <td class="left mono">${g.ac}</td>
+      html += `<tr class="${isFc ? 'forecast-row' : 'actual-row'}">
+        <td class="left mono">${l.ac}</td>
         <td class="left mono">${baFmt}</td>
         <td class="left">${catHtml}</td>
-        <td class="left">${userSet.join(', ')}</td>
-        <td class="left">${statusSet.join(', ')}</td>
-        <td class="left">${descHtml}</td>
-        <td class="left"><span class="type-badge type-fc">Forecast</span></td>
-        ${MONTHS.map(m => `<td class="mono">${fcMap[m] ? fmtN(fcMap[m]) : '—'}</td>`).join('')}
-        <td class="mono"><strong>${fmtN(fcTotal)}</strong></td>
+        <td class="left">${l.user}</td>
+        <td class="left">${l.status}</td> <td class="left"><div class="desc-cell">${l.desc}</div></td>
+        <td class="left"><span class="type-badge ${isFc ? 'type-fc' : 'type-ac'}">${l.type}</span></td>
+        ${MONTHS.map(m => `<td class="mono" style="text-align:right">${l.months[m] ? fmtN(l.months[m]) : '—'}</td>`).join('')}
+        <td class="mono" style="text-align:right; font-weight:600">${fmtN(total)}</td>
       </tr>`;
-    }
-    if (hasAc && fType !== 'Forecast') {
-      html += `<tr class="actual-row">
-        <td class="left mono">${g.ac}</td>
-        <td class="left mono">${baFmt}</td>
-        <td class="left">${catHtml}</td>
-        <td class="left">${userSet.join(', ')}</td>
-        <td class="left">${statusSet.join(', ')}</td>
-        <td class="left">${descHtml}</td>
-        <td class="left"><span class="type-badge type-ac">Actual</span></td>
-        ${MONTHS.map(m => `<td class="mono">${acMap[m] ? fmtN(acMap[m]) : '—'}</td>`).join('')}
-        <td class="mono"><strong>${fmtN(acTotal)}</strong></td>
-      </tr>`;
-    }
+    };
+
+    if (filterType !== 'Actual') fcLines.forEach(l => renderLine(l, true));
+    if (filterType !== 'Forecast') acLines.forEach(l => renderLine(l, false));
   });
 
   html += '</tbody></table>';
@@ -636,6 +467,7 @@ function renderApp() {
         <div class="card-header">
           <span class="card-title">Forecast vs Actual รายเดือน</span>
           <div class="legend">
+            <div class="leg"><span class="leg-dot" style="background:#b45309; height:3px; width:12px;"></span>Util %</div>
             <div class="leg"><span class="leg-dot" style="background:#1a56a0;"></span>Forecast</div>
             <div class="leg"><span class="leg-dot" style="background:#0d7a5f;"></span>Actual</div>
           </div>
@@ -656,7 +488,7 @@ function renderApp() {
     </div>
     <div class="card">
       <div class="card-header">
-        <span class="card-title">รายละเอียดทุก Activity</span>
+        <span class="card-title">DETAILED ANALYSIS (LINE BY LINE)</span>
         <span style="font-size:11px;color:var(--text3);" id="rowCount"></span>
       </div>
       <div class="card-body" style="padding:0;">
@@ -666,7 +498,7 @@ function renderApp() {
   `;
 }
 
-// 🔥 คำสั่งออโต้โหลด: เมื่อหน้าเว็บโหลดเสร็จ ให้วิ่งไปดึงข้อมูลเองทันที!
+// Auto-load เมื่อเปิดหน้าเว็บ
 window.onload = () => {
   loadData();
 };
