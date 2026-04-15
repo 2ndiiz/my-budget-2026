@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PNGD Budget 2026 — Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f3ef;
+    --surface: #ffffff;
+    --surface2: #f0efe9;
+    --border: #dddbd3;
+    --text: #1a1917;
+    --text2: #6b6860;
+    --text3: #9e9c95;
+    --blue: #1a56a0;
+    --blue-light: #e8f0fb;
+    --green: #0d7a5f;
+    --green-light: #e4f5ef;
+    --amber: #b45309;
+    --amber-light: #fef3c7;
+    --red: #b91c1c;
+    --red-light: #fee2e2;
+    --accent: #1a56a0;
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'IBM Plex Sans Thai', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; min-height: 100vh; }
+
+  .header { background: var(--text); color: #fff; padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .header-left { display: flex; align-items: baseline; gap: 14px; }
+  .header-title { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+  .header-sub { font-size: 12px; color: rgba(255,255,255,0.45); font-family: 'IBM Plex Mono', monospace; }
+
+  .url-input-wrap { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: var(--radius); padding: 4px 4px 4px 12px; min-width: 320px; }
+  .url-input { background: transparent; border: none; color: rgba(255,255,255,0.8); font-size: 12px; font-family: 'IBM Plex Mono', monospace; flex: 1; outline: none; }
+
+  #loadBtn { background: var(--blue); color: #fff; border: none; padding: 7px 18px; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; transition: 0.2s; }
+  #loadBtn:hover { opacity: 0.9; }
+  #statusBadge { font-size: 11px; font-family: 'IBM Plex Mono', monospace; padding: 4px 10px; border-radius: 99px; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); }
+
+  .filters { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 28px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .filter-label { font-size: 12px; color: var(--text3); font-weight: 500; text-transform: uppercase; letter-spacing: .5px; }
+  select { font-family: inherit; font-size: 13px; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); min-width: 140px; cursor: pointer; }
+
+  .main { padding: 20px 28px; }
+  .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; }
+  .kpi-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .kpi-value { font-size: 24px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+  .card-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .card-title { font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--text2); letter-spacing: 0.5px; }
+  .card-body { padding: 18px; }
+  .chart-wrap { height: 260px; }
+
+  .table-scroll { overflow-x: auto; max-height: 600px; }
+  table.pivot { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; }
+  table.pivot th { position: sticky; top: 0; background: var(--surface2); z-index: 10; padding: 10px; text-align: left; border-bottom: 1px solid var(--border); }
+  table.pivot td { padding: 8px 10px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+  .type-badge { padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 600; }
+  .type-fc { background: var(--blue-light); color: var(--blue); }
+  .type-ac { background: var(--green-light); color: var(--green); }
+  .desc-cell { max-width: 250px; white-space: normal; line-height: 1.4; }
+  tr:hover td { background: #fcfbf9; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <span class="header-title">PNGD Budget 2026</span>
+    <span class="header-sub">O&M Operations Dashboard</span>
+  </div>
+  <div class="header-right" style="display:flex; gap:10px;">
+    <div class="url-input-wrap">
+      <input class="url-input" id="sheetUrl" placeholder="วาง Google Sheet URL..." value="https://docs.google.com/spreadsheets/d/1SLO4HOK2NGqyMaMM2_hEd7aN8OeltML7HMX9SBD_7Bs">
+    </div>
+    <button id="loadBtn" onclick="loadData()">⟳ โหลดข้อมูล</button>
+    <span id="statusBadge">พร้อมใช้งาน</span>
+  </div>
+</div>
+
+<div class="filters">
+  <span class="filter-label">Filter:</span>
+  <select id="fAC" onchange="applyFilters()"><option value="">Activity Code ทั้งหมด</option></select>
+  <select id="fBA" onchange="applyFilters()"><option value="">Budget Account ทั้งหมด</option></select>
+  <select id="fUser" onchange="applyFilters()"><option value="">User ทั้งหมด</option></select>
+  <select id="fCat" onchange="applyFilters()"><option value="">OPEX + CAPEX</option><option value="OPEX">OPEX</option><option value="CAPEX">CAPEX</option></select>
+</div>
+
+<div class="main">
+  <div class="kpi-row" id="kpiEl"></div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Forecast vs Actual & % Utilization</span></div>
+      <div class="card-body"><div class="chart-wrap"><canvas id="barChart"></canvas></div></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Expense Distribution</span></div>
+      <div class="card-body"><div class="chart-wrap"><canvas id="donutChart"></canvas></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Detailed Analysis (Line by Line)</span></div>
+    <div class="table-scroll" id="pivotEl"></div>
+  </div>
+</div>
+
+<script>
+const MONTHS = ['01-Jan','02-Feb','03-Mar','04-Apr','05-May','06-June','07-July','08-Aug','09-Sep','10-Oct','11-Nov','12-Dec'];
+const MLABELS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+let RAW = [];
+let barChart = null, donutChart = null;
+
+const cleanN = (v) => {
+    if (typeof v === 'number') return v;
+    if (!v) return 0;
+    return parseFloat(String(v).replace(/,/g, '')) || 0;
+};
+
+function fmtM(v) {
+  const a = Math.abs(v);
+  if (a >= 1e6) return (v/1e6).toFixed(2) + 'M';
+  if (a >= 1e3) return (v/1e3).toFixed(1) + 'K';
+  return v.toLocaleString();
+}
+
+async function loadData() {
+  const btn = document.getElementById('loadBtn');
+  const urlInput = document.getElementById('sheetUrl').value.trim();
+  const idMatch = urlInput.match(/\/d\/([^/]+)/);
+  if (!idMatch) return;
+  
+  btn.innerText = 'โหลด...';
+  try {
+    const resp = await fetch(`https://docs.google.com/spreadsheets/d/${idMatch[1]}/gviz/tq?tqx=out:json&sheet=Alldata`);
+    const text = await resp.text();
+    const json = JSON.parse(text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1));
+    
+    RAW = processGoogleData(json.table);
+    btn.innerText = '✓ สำเร็จ';
+    populateFilters();
+    applyFilters();
+  } catch (err) {
+    btn.innerText = 'Error';
+    console.error(err);
+  }
+}
+
+function processGoogleData(table) {
+    const cols = table.cols.map(c => c.label);
+    return table.rows.map(r => {
+        const obj = {};
+        r.c.forEach((cell, idx) => { if (cols[idx]) obj[cols[idx]] = cell ? cell.v : null; });
+        obj['Amount'] = cleanN(obj['Amount']);
+        obj['Forecast'] = cleanN(obj['Forecast'] || (obj['Type'] === 'Forecast' ? obj['Amount'] : 0));
+        obj['Actual'] = cleanN(obj['Actual'] || (obj['Type'] === 'Actual' ? obj['Amount'] : 0));
+        return obj;
+    }).filter(r => r['Activity Code']);
+}
+
+function populateFilters() {
+  const fill = (id, key) => {
+    const vals = [...new Set(RAW.map(r => r[key]).filter(Boolean))].sort();
+    const s = document.getElementById(id);
+    s.innerHTML = s.options[0].outerHTML;
+    vals.forEach(v => { const o = document.createElement('option'); o.value = v; o.text = v; s.appendChild(o); });
+  };
+  fill('fAC', 'Activity Code');
+  fill('fBA', 'Budget Account');
+  fill('fUser', 'User');
+}
+
+function applyFilters() {
+  const fAC = document.getElementById('fAC').value;
+  const fBA = document.getElementById('fBA').value;
+  const fUser = document.getElementById('fUser').value;
+  const fCat = document.getElementById('fCat').value;
+
+  const data = RAW.filter(r => 
+    (!fAC || r['Activity Code'] === fAC) &&
+    (!fBA || String(r['Budget Account']) === fBA) &&
+    (!fUser || r['User'] === fUser) &&
+    (!fCat || r['Category (OPEX/CAPEX)'] === fCat)
+  );
+
+  renderKPIs(data);
+  renderCharts(data);
+  renderTable(data);
+}
+
+function renderKPIs(data) {
+  const fc = data.reduce((s, r) => s + (r['Type'] === 'Forecast' ? r['Amount'] : 0), 0);
+  const ac = data.reduce((s, r) => s + (r['Type'] === 'Actual' ? r['Amount'] : 0), 0);
+  document.getElementById('kpiEl').innerHTML = `
+    <div class="kpi"><div class="kpi-label">Forecast</div><div class="kpi-value" style="color:var(--blue)">${fmtM(fc)}</div></div>
+    <div class="kpi"><div class="kpi-label">Actual</div><div class="kpi-value" style="color:var(--green)">${fmtM(ac)}</div></div>
+    <div class="kpi"><div class="kpi-label">Utilization</div><div class="kpi-value">${fc > 0 ? ((ac/fc)*100).toFixed(1) : 0}%</div></div>
+    <div class="kpi"><div class="kpi-label">Variance</div><div class="kpi-value" style="color:${ac > fc ? 'var(--red)' : 'var(--green)'}">${fmtM(ac-fc)}</div></div>
+  `;
+}
+
+function renderCharts(data) {
+  const getM = (t) => MONTHS.map(m => data.filter(r => r['Month'] === m && r['Type'] === t).reduce((s, r) => s + r['Amount'], 0));
+  const fcVals = getM('Forecast');
+  const acVals = getM('Actual');
+  const varPct = fcVals.map((f, i) => f > 0 ? (acVals[i] / f * 100).toFixed(1) : 0);
+
+  if (barChart) barChart.destroy();
+  barChart = new Chart(document.getElementById('barChart'), {
+    data: {
+      labels: MLABELS,
+      datasets: [
+        { type: 'line', label: 'Utilization %', data: varPct, borderColor: '#b45309', yAxisID: 'yPct', tension: 0.3, pointRadius: 4 },
+        { type: 'bar', label: 'Forecast', data: fcVals, backgroundColor: '#1a56a0', yAxisID: 'yAmt' },
+        { type: 'bar', label: 'Actual', data: acVals, backgroundColor: '#0d7a5f', yAxisID: 'yAmt' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        yAmt: { type: 'linear', position: 'left', ticks: { callback: v => fmtM(v) } },
+        yPct: { type: 'linear', position: 'right', min: 0, ticks: { callback: v => v + '%' }, grid: { drawOnChartArea: false } }
+      }
+    }
+  });
+
+  const opex = data.filter(r => r['Category (OPEX/CAPEX)'] === 'OPEX').reduce((s, r) => s + r['Amount'], 0);
+  const capex = data.filter(r => r['Category (OPEX/CAPEX)'] === 'CAPEX').reduce((s, r) => s + r['Amount'], 0);
+  if (donutChart) donutChart.destroy();
+  donutChart = new Chart(document.getElementById('donutChart'), {
+    type: 'doughnut',
+    data: { labels: ['OPEX', 'CAPEX'], datasets: [{ data: [opex, capex], backgroundColor: ['#b45309', '#7c3aed'] }]},
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+}
+
+function renderTable(data) {
+  // 🔥 หัวใจสำคัญ: กรุ๊ปตาม Account + User + Description เพื่อแยกบรรทัด
+  const groups = {};
+  data.forEach(r => {
+    const key = `${r['Activity Code']}||${r['Budget Account']}||${r['User']}||${r['Description']}`;
+    if (!groups[key]) groups[key] = { 
+      ac: r['Activity Code'], ba: r['Budget Account'], user: r['User'], 
+      cat: r['Category (OPEX/CAPEX)'], desc: r['Description'], rows: [] 
+    };
+    groups[key].rows.push(r);
+  });
+
+  let h = `<table class="pivot"><thead><tr>
+    <th>Activity</th><th>Account</th><th>User</th><th>Description</th><th>Type</th>
+    ${MLABELS.map(m => `<th>${m}</th>`).join('')}<th>Total</th>
+  </tr></thead><tbody>`;
+
+  Object.values(groups).forEach(g => {
+    const types = ['Forecast', 'Actual'];
+    types.forEach(t => {
+      const typeRows = g.rows.filter(r => r['Type'] === t);
+      const mData = {}; MONTHS.forEach(m => mData[m] = 0);
+      typeRows.forEach(r => mData[r['Month']] += r['Amount']);
+      const total = Object.values(mData).reduce((a,b)=>a+b, 0);
+      
+      if (total > 0 || t === 'Forecast') { // โชว์ Forecast เสมอ หรือ Actual ที่มียอด
+        h += `<tr>
+          <td class="mono">${g.ac}</td>
+          <td class="mono">${g.ba}</td>
+          <td>${g.user}</td>
+          <td class="desc-cell">${g.desc}</td>
+          <td><span class="type-badge ${t === 'Forecast' ? 'type-fc' : 'type-ac'}">${t}</span></td>
+          ${MONTHS.map(m => `<td class="mono" style="text-align:right">${mData[m] ? mData[m].toLocaleString() : '—'}</td>`).join('')}
+          <td class="mono" style="text-align:right; font-weight:600">${total.toLocaleString()}</td>
+        </tr>`;
+      }
+    });
+  });
+  h += `</tbody></table>`;
+  document.getElementById('pivotEl').innerHTML = h;
+}
+
+window.onload = loadData;
+</script>
+</body>
+</html>
