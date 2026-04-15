@@ -340,32 +340,44 @@ function fmtM(v) {
 }
 
 async function loadData() {
-  const url = document.getElementById('sheetUrl').value.trim();
-  const sheetId = extractSheetId(url);
-  if (!sheetId) { setStatus('URL ไม่ถูกต้อง', 'err'); return; }
-
   const btn = document.getElementById('loadBtn');
-  btn.textContent = '…กำลังโหลด';
-  btn.disabled = true;
-  setStatus('กำลังโหลด…', '');
-  document.getElementById('appContent').innerHTML = '<div class="loading-state"><div class="spinner"></div><div>กำลังดึงข้อมูลจาก Google Sheets…</div></div>';
+  const input = document.getElementById('sheetUrl');
+  const rawUrl = input.value.trim();
 
+  // --- ส่วนที่เพิ่มใหม่: ล้างลิงก์ให้สะอาด ---
+  const idMatch = rawUrl.match(/\/d\/([^/]+)/);
+  if (!idMatch) {
+    alert("URL ไม่ถูกต้อง! กรุณาก๊อปปี้ลิงก์จากหน้า Google Sheet มาวางใหม่ครับ");
+    return;
+  }
+  const sheetId = idMatch[1];
+  // สร้าง URL ใหม่ที่ถูกต้องเสมอ ไม่ว่าคุณจะก๊อปส่วนไหนมา
   const apiUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Alldata`;
+  // ---------------------------------------
+
+  btn.innerText = 'กำลังโหลด...';
+  btn.classList.add('loading');
 
   try {
-    const res = await fetch(apiUrl);
-    const text = await res.text();
-    const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/)[1]);
-    RAW = parseGViz(json);
-    setStatus(`✓ ${RAW.length} rows`, 'ok');
-    populateFilters();
-    applyFilters();
-  } catch(e) {
-    setStatus('โหลดไม่ได้ — ตรวจสอบ share settings', 'err');
-    document.getElementById('appContent').innerHTML = `<div class="loading-state"><div style="font-size:24px;">⚠️</div><div style="margin-bottom:6px;font-weight:500;">ดึงข้อมูลไม่ได้</div><div style="font-size:12px;color:var(--text3);">ตรวจสอบว่า Google Sheet เปิด "Anyone with the link can view"<br>แล้วลองกด "โหลดข้อมูล" อีกครั้ง</div></div>`;
+    const resp = await fetch(apiUrl);
+    const text = await resp.text();
+    // ตัดข้อความส่วนเกินของ Google ออกเพื่อให้เหลือแค่ JSON
+    const json = JSON.parse(text.substring(47, text.length - 2));
+
+    if (json.table && json.table.rows) {
+      RAW = processGoogleData(json.table);
+      btn.innerText = '✓ โหลดสำเร็จ';
+      btn.style.background = 'var(--green)';
+      populateFilters();
+      applyFilters();
+    }
+  } catch (err) {
+    console.error(err);
+    btn.innerText = 'โหลดไม่ได้ — ตรวจสอบการแชร์';
+    btn.classList.remove('loading');
+    btn.classList.add('error');
+    alert("เกิดข้อผิดพลาด: ตรวจสอบว่าชื่อแท็บคือ 'Alldata' และกด Publish to Web หรือยังครับ?");
   }
-  btn.textContent = '⟳ โหลดข้อมูล';
-  btn.disabled = false;
 }
 
 function setStatus(msg, cls) {
