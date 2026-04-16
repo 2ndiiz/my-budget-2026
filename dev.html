@@ -192,7 +192,7 @@ function applyFilters() {
   renderKPIs(data);
   renderCharts(data);
   renderTable(data);
-  checkOverBudget(RAW); // ตรวจสอบ Over Budget จากข้อมูลทั้งหมด (ไม่สน Filter เดือน)
+  checkOverBudget(RAW); 
 }
 
 // ✅ 2. ระบบแจ้งเตือน Over-Budget
@@ -254,7 +254,6 @@ function renderCharts(data) {
     }
   });
 
-  // Donut Chart
   const opex = data.filter(r => r['Category (OPEX/CAPEX)'] === 'OPEX').reduce((s, r) => s + r['Amount'], 0);
   const capex = data.filter(r => r['Category (OPEX/CAPEX)'] === 'CAPEX').reduce((s, r) => s + r['Amount'], 0);
   if (donutChart) donutChart.destroy();
@@ -298,7 +297,6 @@ function renderTable(data) {
     const rows = groups[key];
     const bgClass = gIdx % 2 === 0 ? '' : 'bg-odd'; gIdx++;
     
-    // Logic แยกบรรทัด Forecast (Budget) กับ Actual (User อื่นๆ)
     const lines = {};
     rows.forEach(r => {
       const lKey = `${r['Type']}||${r['User']}||${r['Description']}`;
