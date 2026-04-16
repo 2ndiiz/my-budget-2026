@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PNGD Budget 2026 — Dashboard v2</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f3ef; --surface: #ffffff; --surface2: #f0efe9; --border: #dddbd3;
+    --text: #1a1917; --text2: #6b6860; --text3: #9e9c95;
+    --blue: #1a56a0; --blue-light: #e8f0fb; --green: #0d7a5f; --green-light: #e4f5ef;
+    --amber: #b45309; --red: #b91c1c; --red-light: #fee2e2;
+    --radius: 8px; --radius-lg: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'IBM Plex Sans Thai', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; min-height: 100vh; }
+
+  .header { background: var(--text); color: #fff; padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .header-title { font-size: 17px; font-weight: 600; }
+  .header-sub { font-size: 11px; color: rgba(255,255,255,0.4); font-family: 'IBM Plex Mono', monospace; }
+  
+  /* 🕒 Last Updated Style */
+  #lastUpdated { font-size: 11px; color: #4ade80; font-family: 'IBM Plex Mono', monospace; margin-right: 10px; }
+
+  .url-input-wrap { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: var(--radius); padding: 4px 12px; min-width: 320px; }
+  .url-input { background: transparent; border: none; color: rgba(255,255,255,0.8); font-size: 11px; font-family: 'IBM Plex Mono', monospace; flex: 1; outline: none; }
+  
+  #loadBtn { background: var(--blue); color: #fff; border: none; padding: 7px 16px; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; }
+
+  /* 🚨 Alert Style */
+  .alert-box { background: var(--red-light); color: var(--red); padding: 12px 20px; border-radius: var(--radius); margin-bottom: 20px; border-left: 4px solid var(--red); display: none; }
+  .alert-title { font-weight: 600; font-size: 13px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+
+  .filters { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 28px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  select { font-family: inherit; font-size: 13px; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); min-width: 130px; }
+  .active-filter-hint { font-size: 11px; color: var(--blue); font-weight: 600; display: none; }
+
+  .main { padding: 20px 28px; }
+  .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; }
+  .kpi-label { font-size: 11px; color: var(--text3); text-transform: uppercase; margin-bottom: 6px; }
+  .kpi-value { font-size: 22px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+  .card-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .card-title { font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--text2); }
+  .card-body { padding: 16px; }
+  .chart-wrap { height: 240px; position: relative; }
+
+  .table-scroll { overflow-x: auto; max-height: 500px;}
+  table.pivot { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; }
+  table.pivot th { background: var(--surface2); color: var(--text2); font-weight: 600; padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10;}
+  table.pivot td { padding: 8px 10px; border-bottom: 1px solid #f0ede6; vertical-align: top; }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+  
+  table.pivot tr.bg-odd td { background-color: #f7f6f1; }
+  table.pivot tr.forecast-row td { color: var(--blue); }
+  table.pivot tr.actual-row td { color: var(--green); }
+  
+  /* 🚨 Row Over Budget Alert */
+  tr.over-budget td.total-cell { color: var(--red) !important; font-weight: 700; background: #fff1f1 !important; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="header-title">PNGD Budget 2026</div>
+    <div class="header-sub">Interactive O&M Dashboard</div>
+  </div>
+  <div class="header-right" style="display:flex; align-items:center;">
+    <span id="lastUpdated"></span>
+    <div class="url-input-wrap">
+      <input class="url-input" id="sheetUrl" placeholder="Google Sheet URL..." value="https://docs.google.com/spreadsheets/d/1SLO4HOK2NGqyMaMM2_hEd7aN8OeltML7HMX9SBD_7Bs/edit?usp=sharing">
+    </div>
+    <button id="loadBtn" onclick="loadData()" style="margin-left:10px;">⟳ ดึงข้อมูล</button>
+  </div>
+</div>
+
+<div class="filters">
+  <select id="fAC" onchange="applyFilters()"><option value="">Activity ทั้งหมด</option></select>
+  <select id="fBA" onchange="applyFilters()"><option value="">Account ทั้งหมด</option></select>
+  <select id="fUser" onchange="applyFilters()"><option value="">User ทั้งหมด</option></select>
+  <select id="fMonth" onchange="applyFilters()"><option value="">ทุกเดือน (Click กราฟได้)</option></select>
+  <button onclick="resetInteractions()" style="font-size:11px; cursor:pointer; background:none; border:1px solid var(--border); padding:4px 8px; border-radius:4px;">ล้าง Filter กราฟ</button>
+  <span id="monthHint" class="active-filter-hint"></span>
+</div>
+
+<div class="main">
+  <div id="overBudgetAlert" class="alert-box"></div>
+
+  <div class="kpi-row" id="kpiEl"></div>
+  
+  <div class="two-col">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Forecast vs Actual (คลิกแท่งกราฟเพื่อกรองเดือน)</span></div>
+      <div class="card-body"><div class="chart-wrap"><canvas id="barChart"></canvas></div></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Expense Proportion</span></div>
+      <div class="card-body"><div class="chart-wrap"><canvas id="donutChart"></canvas></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">Detailed Analysis</span></div>
+    <div class="card-body" style="padding:0;"><div class="table-scroll" id="pivotEl"></div></div>
+  </div>
+</div>
+
+<script>
+const MONTHS = ['01-Jan','02-Feb','03-Mar','04-Apr','05-May','06-June','07-July','08-Aug','09-Sep','10-Oct','11-Nov','12-Dec'];
+const MLABELS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+let RAW = [];
+let barChart = null, donutChart = null;
+let selectedMonthFilter = "";
+
+async function loadData() {
+  const url = document.getElementById('sheetUrl').value.trim();
+  const idMatch = url.match(/\/d\/([^/]+)/);
+  if (!idMatch) return;
+
+  const btn = document.getElementById('loadBtn');
+  btn.innerText = 'กำลังโหลด...';
+
+  try {
+    const resp = await fetch(`https://docs.google.com/spreadsheets/d/${idMatch[1]}/gviz/tq?tqx=out:json&sheet=Alldata`);
+    const text = await resp.text();
+    const json = JSON.parse(text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1));
+    
+    RAW = processGoogleData(json.table);
+    
+    // ✅ 1. แสดงเวลาอัปเดตล่าสุด
+    const now = new Date();
+    document.getElementById('lastUpdated').innerText = `อัปเดตล่าสุด: ${now.toLocaleTimeString('th-TH')} น.`;
+    
+    btn.innerText = '⟳ ดึงข้อมูล';
+    populateFilters();
+    applyFilters();
+  } catch (err) {
+    btn.innerText = 'Error!';
+  }
+}
+
+function processGoogleData(table) {
+  const cols = table.cols.map(c => c.label);
+  return table.rows.filter(r => r && r.c[0]).map(r => {
+    const obj = {};
+    r.c.forEach((cell, i) => {
+      let val = cell ? cell.v : '';
+      if (typeof val === 'string' && ['Amount','Forecast','Actual'].includes(cols[i])) val = val.replace(/,/g, '');
+      obj[cols[i]] = val;
+    });
+    obj['Amount'] = parseFloat(obj['Amount']) || 0;
+    return obj;
+  }).filter(r => r['Activity Code']);
+}
+
+function populateFilters() {
+  const fill = (id, key) => {
+    const vals = [...new Set(RAW.map(r => r[key]).filter(Boolean))].sort();
+    const s = document.getElementById(id);
+    s.innerHTML = s.options[0].outerHTML;
+    vals.forEach(v => { const o = document.createElement('option'); o.value = v; o.text = v; s.appendChild(o); });
+  };
+  fill('fAC', 'Activity Code');
+  fill('fBA', 'Budget Account');
+  fill('fUser', 'User');
+  
+  // Populate Month Filter
+  const mS = document.getElementById('fMonth');
+  mS.innerHTML = '<option value="">ทุกเดือน (Click กราฟได้)</option>';
+  MONTHS.forEach(m => { const o = document.createElement('option'); o.value = m; o.text = m; mS.appendChild(o); });
+}
+
+function applyFilters() {
+  const fac = document.getElementById('fAC').value;
+  const fba = document.getElementById('fBA').value;
+  const fuser = document.getElementById('fUser').value;
+  const fmonth = document.getElementById('fMonth').value || selectedMonthFilter;
+
+  const data = RAW.filter(r => 
+    (!fac || r['Activity Code'] === fac) &&
+    (!fba || String(r['Budget Account']) === fba) &&
+    (!fuser || r['User'] === fuser) &&
+    (!fmonth || r['Month'] === fmonth)
+  );
+
+  renderKPIs(data);
+  renderCharts(data);
+  renderTable(data);
+  checkOverBudget(RAW); // ตรวจสอบ Over Budget จากข้อมูลทั้งหมด (ไม่สน Filter เดือน)
+}
+
+// ✅ 2. ระบบแจ้งเตือน Over-Budget
+function checkOverBudget(allData) {
+  const alertBox = document.getElementById('overBudgetAlert');
+  const summary = {};
+  
+  allData.forEach(r => {
+    const key = `${r['Activity Code']} (${r['Budget Account']})`;
+    if (!summary[key]) summary[key] = { f: 0, a: 0 };
+    if (r['Type'] === 'Forecast') summary[key].f += r['Amount'];
+    if (r['Type'] === 'Actual') summary[key].a += r['Amount'];
+  });
+
+  const overs = Object.keys(summary)
+    .filter(k => summary[k].a > summary[k].f && summary[k].f > 0)
+    .map(k => `<li><b>${k}</b>: เกินไป ${(summary[k].a - summary[k].f).toLocaleString()} ฿</li>`);
+
+  if (overs.length > 0) {
+    alertBox.style.display = 'block';
+    alertBox.innerHTML = `<div class="alert-title">⚠️ ตรวจพบงบประมาณเกินแผน (${overs.length} รายการ)</div><ul>${overs.join('')}</ul>`;
+  } else {
+    alertBox.style.display = 'none';
+  }
+}
+
+function renderCharts(data) {
+  const getM = (t) => MONTHS.map(m => data.filter(r => r['Month'] === m && r['Type'] === t).reduce((s, r) => s + r['Amount'], 0));
+  const fV = getM('Forecast'); const aV = getM('Actual');
+  const uV = fV.map((f, i) => f > 0 ? (aV[i]/f*100).toFixed(1) : 0);
+
+  if (barChart) barChart.destroy();
+  const ctx = document.getElementById('barChart').getContext('2d');
+  barChart = new Chart(ctx, {
+    data: {
+      labels: MLABELS,
+      datasets: [
+        { type: 'line', label: 'Utilization %', data: uV, borderColor: '#b45309', yAxisID: 'yP', tension: 0.3, pointRadius: 4 },
+        { type: 'bar', label: 'Forecast', data: fV, backgroundColor: 'rgba(26,86,160,0.7)', yAxisID: 'yA' },
+        { type: 'bar', label: 'Actual', data: aV, backgroundColor: 'rgba(13,122,95,0.75)', yAxisID: 'yA' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      onClick: (e, elements) => {
+        // ✅ 3. Interactive Chart: Click to Filter Month
+        if (elements.length > 0) {
+          const idx = elements[0].index;
+          selectedMonthFilter = MONTHS[idx];
+          document.getElementById('monthHint').style.display = 'inline';
+          document.getElementById('monthHint').innerText = `เดือนที่เลือก: ${MLABELS[idx]}`;
+          applyFilters();
+        }
+      },
+      scales: {
+        yA: { type: 'linear', position: 'left', ticks: { callback: v => v >= 1e6 ? (v/1e6)+'M' : v.toLocaleString() } },
+        yP: { type: 'linear', position: 'right', min: 0, ticks: { callback: v => v+'%' }, grid: { drawOnChartArea: false } }
+      }
+    }
+  });
+
+  // Donut Chart
+  const opex = data.filter(r => r['Category (OPEX/CAPEX)'] === 'OPEX').reduce((s, r) => s + r['Amount'], 0);
+  const capex = data.filter(r => r['Category (OPEX/CAPEX)'] === 'CAPEX').reduce((s, r) => s + r['Amount'], 0);
+  if (donutChart) donutChart.destroy();
+  donutChart = new Chart(document.getElementById('donutChart'), {
+    type: 'doughnut',
+    data: { labels: ['OPEX', 'CAPEX'], datasets: [{ data: [opex, capex], backgroundColor: ['#b45309', '#7c3aed'] }]},
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+}
+
+function resetInteractions() {
+  selectedMonthFilter = "";
+  document.getElementById('fMonth').value = "";
+  document.getElementById('monthHint').style.display = 'none';
+  applyFilters();
+}
+
+function renderKPIs(data) {
+  const f = data.reduce((s, r) => s + (r['Type'] === 'Forecast' ? r['Amount'] : 0), 0);
+  const a = data.reduce((s, r) => s + (r['Type'] === 'Actual' ? r['Amount'] : 0), 0);
+  document.getElementById('kpiEl').innerHTML = `
+    <div class="kpi"><div class="kpi-label">Forecast</div><div class="kpi-value" style="color:var(--blue)">${f.toLocaleString()} ฿</div></div>
+    <div class="kpi"><div class="kpi-label">Actual</div><div class="kpi-value" style="color:var(--green)">${a.toLocaleString()} ฿</div></div>
+    <div class="kpi"><div class="kpi-label">Utilization</div><div class="kpi-value">${f > 0 ? (a/f*100).toFixed(1) : 0}%</div></div>
+    <div class="kpi"><div class="kpi-label">Variance</div><div class="kpi-value" style="color:${a>f?'var(--red)':'var(--green)'}">${(a-f).toLocaleString()} ฿</div></div>
+  `;
+}
+
+function renderTable(data) {
+  const groups = {};
+  data.forEach(r => {
+    const key = `${r['Activity Code']}||${r['Budget Account']}`;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(r);
+  });
+
+  let h = `<table class="pivot"><thead><tr><th>Activity</th><th>Account</th><th>Cat</th><th>User</th><th>Status</th><th>Description</th><th>Type</th>${MLABELS.map(m=>`<th>${m.split('-')[1]}</th>`).join('')}<th>Total</th></tr></thead><tbody>`;
+  
+  let gIdx = 0;
+  Object.keys(groups).sort().forEach(key => {
+    const rows = groups[key];
+    const bgClass = gIdx % 2 === 0 ? '' : 'bg-odd'; gIdx++;
+    
+    // Logic แยกบรรทัด Forecast (Budget) กับ Actual (User อื่นๆ)
+    const lines = {};
+    rows.forEach(r => {
+      const lKey = `${r['Type']}||${r['User']}||${r['Description']}`;
+      if (!lines[lKey]) {
+        lines[lKey] = { ac:r['Activity Code'], ba:r['Budget Account'], cat:r['Category (OPEX/CAPEX)'], user:r['User'], status:r['Status'], desc:r['Description'], type:r['Type'], months:{} };
+        MONTHS.forEach(m => lines[lKey].months[m] = 0);
+      }
+      lines[lKey].months[r['Month']] += r['Amount'];
+    });
+
+    Object.values(lines).forEach(l => {
+      const total = Object.values(l.months).reduce((a,b)=>a+b, 0);
+      if (total === 0 && l.type === 'Actual') return;
+      
+      h += `<tr class="${bgClass} ${l.type==='Forecast'?'forecast-row':'actual-row'}">
+        <td>${l.ac}</td><td class="mono">${l.ba}</td><td>${l.cat}</td><td>${l.user}</td><td>${l.status}</td>
+        <td style="white-space:normal; max-width:200px;">${l.desc}</td><td>${l.type}</td>
+        ${MONTHS.map(m => `<td class="mono" style="text-align:right">${l.months[m]?l.months[m].toLocaleString():'—'}</td>`).join('')}
+        <td class="mono total-cell" style="text-align:right">${total.toLocaleString()}</td>
+      </tr>`;
+    });
+  });
+  document.getElementById('pivotEl').innerHTML = h + '</tbody></table>';
+}
+
+window.onload = loadData;
+</script>
+</body>
+</html>
