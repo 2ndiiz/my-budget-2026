@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PNGD Budget 2026 — Dashboard</title>
+<title>PNGD Budget 2026 — Dashboard v4.2</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -463,14 +463,30 @@ function updateExecSummary(data) {
         }
     });
 
+    // 🔥 ลอจิกใหม่: จัดกลุ่มตามงาน -> หาเดือนที่เกิดก่อนของกลุ่ม -> เรียงกลุ่มตามเดือนที่เกิดก่อน -> เรียงเดือนในกลุ่ม
     const sortLogic = (items) => {
-        return items.sort((a, b) => {
-            const mDiff = MONTHS.indexOf(a.mFull) - MONTHS.indexOf(b.mFull);
-            if (mDiff !== 0) return mDiff; // เรียงเดือนก่อน
-            if (a.d < b.d) return -1;      // ค่อยจัดกลุ่มชื่อ
+        const groups = {};
+        items.forEach(item => {
+            if (!groups[item.d]) groups[item.d] = [];
+            groups[item.d].push(item);
+        });
+
+        const groupList = Object.keys(groups).map(d => {
+            const grpItems = groups[d];
+            grpItems.sort((a, b) => MONTHS.indexOf(a.mFull) - MONTHS.indexOf(b.mFull)); // เรียงเดือนภายในกลุ่ม
+            const minMonth = MONTHS.indexOf(grpItems[0].mFull); // หาเดือนที่เร็วที่สุดของกลุ่มนี้
+            return { d, minMonth, items: grpItems };
+        });
+
+        // เรียงกลุ่มงาน โดยอิงจาก "เดือนแรกที่เริ่มงานนั้น" ถ้าเดือนเท่ากันให้เรียงชื่อ A-Z
+        groupList.sort((a, b) => {
+            if (a.minMonth !== b.minMonth) return a.minMonth - b.minMonth;
+            if (a.d < b.d) return -1;
             if (a.d > b.d) return 1;
             return 0;
         });
+
+        return groupList.flatMap(g => g.items); // แตกกลับมาเป็น Array เดี่ยว
     };
 
     const makeBox = (title, color, key, bgColor) => {
