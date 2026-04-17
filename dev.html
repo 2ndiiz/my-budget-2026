@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PNGD Budget 2026 — Dashboard</title>
+<title>PNGD Budget 2026 — Dashboard v4.0</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -45,13 +45,7 @@
   .badge-over { background: var(--red-light); color: var(--red); }
   .badge-under { background: var(--green-light); color: var(--green); }
 
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 20px; }
-  .card-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-  .card-title { font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--text2); }
-  .card-body { padding: 16px; }
-
-  /* ── Tracker Boxes ── */
-  .box-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; align-items: start; }
+  /* ── Tracker ── */
   .tracker-box { padding: 15px; border-radius: 8px; text-align: center; }
   .tracker-box-label { font-size: 11px; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
   .tracker-box-val { font-size: 20px; font-weight: 700; margin-bottom: 10px; }
@@ -110,7 +104,7 @@
       <span id="execMonthHint" style="font-size:11px; color:var(--blue); font-weight:500;"></span>
     </div>
     <div class="card-body">
-      <div class="box-container">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; align-items: start;">
         <div id="boxPR" class="tracker-box" style="background:#fdf2f2;"></div>
         <div id="boxPO" class="tracker-box" style="background:#fffbeb;"></div>
         <div id="boxActual" class="tracker-box" style="background:#f0fdf4;"></div>
@@ -124,11 +118,17 @@
 
   <div class="two-col">
     <div class="card">
-      <div class="card-header"><span class="card-title">Forecast vs Actual รายเดือน</span><button class="btn-clear" onclick="clearMonthFilter()">ล้างการเลือกเดือน</button></div>
+      <div class="card-header">
+        <span class="card-title">Forecast vs Actual รายเดือน</span>
+        <button class="btn-clear" onclick="clearMonthFilter()">ล้างการเลือกเดือน</button>
+      </div>
       <div class="card-body"><div class="chart-wrap"><canvas id="barChart"></canvas></div></div>
     </div>
     <div class="card">
-      <div class="card-header"><span class="card-title">OPEX / CAPEX สัดส่วน</span><div id="donutLegend" style="font-size:11px; color:var(--text2); display:flex; gap:10px;"></div></div>
+      <div class="card-header">
+        <span class="card-title">OPEX / CAPEX สัดส่วน</span>
+        <div id="donutLegend" style="font-size:11px; color:var(--text2); display:flex; gap:10px;"></div>
+      </div>
       <div class="card-body"><div class="chart-wrap"><canvas id="donutChart"></canvas></div></div>
     </div>
   </div>
@@ -221,7 +221,7 @@ function applyFilters() {
   updateExecSummary(data);
 
   if(document.getElementById('execMonthHint')) {
-    document.getElementById('execMonthHint').innerText = selectedMonths.length > 0 ? `ช่วง: ${selectedMonths.map(m => m.split('-')[1]).join(', ')}` : "ทุกเดือน";
+    document.getElementById('execMonthHint').innerText = selectedMonths.length > 0 ? `(ช่วงที่เลือก: ${selectedMonths.map(m => m.split('-')[1]).join(', ')})` : "";
   }
 }
 
@@ -232,26 +232,36 @@ function updateExecSummary(data) {
     document.getElementById('currentAC').innerText = acFilter;
 
     let stats = { 'PR': { t: 0, i: [] }, 'Packing Forecast': { t: 0, i: [] }, 'Packing': { t: 0, i: [] } };
-    
-    // 🔥 แนวทาง A: คำนวณ Target จากยอด Forecast เฉพาะช่วงเดือนที่เลือก
     const dynamicTarget = data.filter(r => r['Type'] === 'Forecast').reduce((s, r) => s + (parseFloat(r['Amount']) || 0), 0);
 
     data.forEach(r => {
         const amt = parseFloat(r['Amount']) || 0;
         if (stats[r['Status']] && amt > 0) {
             stats[r['Status']].t += amt;
-            stats[r['Status']].i.push({ d: r['Description'] || 'N/A', a: amt, m: r['Month']?.split('-')[1] });
+            stats[r['Status']].i.push({ 
+                d: r['Description'] || 'N/A', a: amt, mFull: r['Month'], mDisp: r['Month']?.split('-')[1] 
+            });
         }
     });
 
+    // 🔥 เรียงตาม Description และตาม Month จากต้นปีไปท้ายปี
+    const sortLogic = (items) => {
+        return items.sort((a, b) => {
+            if (a.d < b.d) return -1;
+            if (a.d > b.d) return 1;
+            return MONTHS.indexOf(a.mFull) - MONTHS.indexOf(b.mFull);
+        });
+    };
+
     const makeBox = (title, color, key) => {
         const s = stats[key];
+        const sorted = sortLogic(s.i);
         let h = `<div class="tracker-box-label" style="color:${color}">${title}</div>`;
         h += `<div class="tracker-box-val" style="color:${color}">${fmtM(s.t)}</div>`;
-        if (s.i.length > 0) {
+        if (sorted.length > 0) {
             h += `<div style="border-top:1px solid rgba(0,0,0,0.05); padding-top:8px;">`;
-            s.i.forEach(item => {
-                h += `<div class="tracker-item"><span style="color:var(--text2)">• ${item.d} (${item.m})</span><span class="mono" style="font-weight:600">${fmtM(item.a)}</span></div>`;
+            sorted.forEach(item => {
+                h += `<div class="tracker-item"><span style="color:var(--text2)">• ${item.d} (${item.mDisp})</span><span class="mono" style="font-weight:600">${fmtM(item.a)}</span></div>`;
             });
             h += `</div>`;
         } else { h += `<div style="font-size:10px; color:var(--text3)">— No Data —</div>`; }
@@ -262,9 +272,9 @@ function updateExecSummary(data) {
     document.getElementById('boxPO').innerHTML = makeBox('STATUS: FORECAST', '#92400e', 'Packing Forecast');
     document.getElementById('boxActual').innerHTML = makeBox('STATUS: PACKED (ACTUAL)', '#166534', 'Packing');
 
-    const progress = dynamicTarget > 0 ? Math.min((stats['Packing'].t / dynamicTarget) * 100, 100).toFixed(1) : 0;
+    const prog = dynamicTarget > 0 ? Math.min((stats['Packing'].t / dynamicTarget) * 100, 100).toFixed(1) : 0;
     document.getElementById('progressBar').style.width = progress + '%';
-    document.getElementById('progressText').innerText = `ดำเนินการไปแล้ว ${progress}% (Target Forecast: ${fmtM(dynamicTarget)})`;
+    document.getElementById('progressText').innerText = `ดำเนินการไปแล้ว ${prog}% (Target: ${fmtM(dynamicTarget)})`;
 }
 
 function renderKPIs(data) {
