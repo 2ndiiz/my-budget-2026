@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PNGD Budget 2026 — Dashboard v5.1 (Multi-tag & Sorting)</title>
+<title>PNGD Budget 2026 — Dashboard v5.3</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -110,7 +110,7 @@
   table.pivot tr.bg-odd td { background-color: #f7f6f1; } 
   
   table.pivot tr.forecast-row td { color: var(--blue); } 
-  table.pivot tr.personal-row td { color: var(--purple); } /* เพิ่มสีม่วงให้แถว Personal */
+  table.pivot tr.personal-row td { color: var(--purple); } 
   table.pivot tr.actual-row td { color: var(--green); }
   table.pivot tr:hover td { background-color: var(--blue-light) !important; }
   
@@ -472,7 +472,6 @@ function renderTable(data) {
   const sortedKeys = Object.keys(groups).sort();
   let groupIndex = 0;
 
-  // 🔥 จัดลำดับความสำคัญของ Type: 1=Forecast, 2=Personal, 3=Actual
   const typeWeight = { 'Forecast': 1, 'Personal': 2, 'Actual': 3 };
 
   sortedKeys.forEach(accKey => {
@@ -499,7 +498,30 @@ function renderTable(data) {
       lines[lineKey].months[r['Month']] += parseFloat(r['Amount']) || 0;
     });
 
-    Object.values(lines).sort((a,b) => (typeWeight[a.type] || 4) - (typeWeight[b.type] || 4)).forEach(l => {
+    const linesArr = Object.values(lines);
+    // เก็บชื่อ Description ที่มีใน Personal เอาไว้เช็ค
+    const personalDescs = new Set(linesArr.filter(l => l.type === 'Personal').map(l => l.desc));
+
+    // 🔥 ลอจิกการเรียงแบบ "กฎเหล็ก 4 ชั้น"
+    linesArr.sort((a, b) => {
+        // กฎ 1: Forecast ต้องอยู่บนสุดเสมอ
+        if (a.type === 'Forecast' && b.type !== 'Forecast') return -1;
+        if (a.type !== 'Forecast' && b.type === 'Forecast') return 1;
+
+        // กฎ 2: แบ่งกลุ่ม Personal (รวม Actual ที่ชื่อตรง Personal) ให้อยู่บน Actual ขาจร
+        const isGrpPersonalA = a.type === 'Personal' || personalDescs.has(a.desc);
+        const isGrpPersonalB = b.type === 'Personal' || personalDescs.has(b.desc);
+
+        if (isGrpPersonalA && !isGrpPersonalB) return -1;
+        if (!isGrpPersonalA && isGrpPersonalB) return 1;
+
+        // กฎ 3: ภายในกลุ่มระดับเดียวกัน ให้เรียงตามชื่อ Description A-Z
+        if (a.desc < b.desc) return -1;
+        if (a.desc > b.desc) return 1;
+
+        // กฎ 4: ถ้าชื่อ Description เหมือนกันเป๊ะ ให้ Personal นำหน้า Actual
+        return (typeWeight[a.type] || 4) - (typeWeight[b.type] || 4);
+    }).forEach(l => {
       const total = Object.values(l.months).reduce((a,b)=>a+b, 0);
       if (total === 0 && l.type !== 'Forecast') return; 
 
@@ -508,7 +530,6 @@ function renderTable(data) {
       const typeClass = l.type === 'Forecast' ? 'type-fc' : (l.type === 'Actual' ? 'type-ac' : 'type-ps');
       const typeHtml = `<span class="type-badge ${typeClass}">${l.type}</span>`;
       
-      // เลือก Class จัดสีแถว
       const rowColorClass = l.type === 'Forecast' ? 'forecast-row' : (l.type === 'Personal' ? 'personal-row' : 'actual-row');
 
       html += `<tr class="${rowColorClass} ${bgClass}">
