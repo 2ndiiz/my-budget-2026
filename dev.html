@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PNGD Budget 2026 — Dashboard v5.3 (Perfect Sorting)</title>
+<title>PNGD Budget 2026 — Dashboard v5.3</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -498,17 +498,28 @@ function renderTable(data) {
       lines[lineKey].months[r['Month']] += parseFloat(r['Amount']) || 0;
     });
 
-    // 🔥 ลอจิกการเรียงลำดับใหม่สุดเป๊ะ: 
-    // 1. Forecast อยู่บนสุดเสมอ
-    // 2. ถ้าไม่ใช่ Forecast จับกลุ่มชื่อเดียวกัน
-    // 3. ชื่อเดียวกัน Personal อยู่บน Actual
-    Object.values(lines).sort((a, b) => {
+    const linesArr = Object.values(lines);
+    // เก็บชื่อ Description ที่มีใน Personal เอาไว้เช็ค
+    const personalDescs = new Set(linesArr.filter(l => l.type === 'Personal').map(l => l.desc));
+
+    // 🔥 ลอจิกการเรียงแบบ "กฎเหล็ก 4 ชั้น"
+    linesArr.sort((a, b) => {
+        // กฎ 1: Forecast ต้องอยู่บนสุดเสมอ
         if (a.type === 'Forecast' && b.type !== 'Forecast') return -1;
         if (a.type !== 'Forecast' && b.type === 'Forecast') return 1;
-        
+
+        // กฎ 2: แบ่งกลุ่ม Personal (รวม Actual ที่ชื่อตรง Personal) ให้อยู่บน Actual ขาจร
+        const isGrpPersonalA = a.type === 'Personal' || personalDescs.has(a.desc);
+        const isGrpPersonalB = b.type === 'Personal' || personalDescs.has(b.desc);
+
+        if (isGrpPersonalA && !isGrpPersonalB) return -1;
+        if (!isGrpPersonalA && isGrpPersonalB) return 1;
+
+        // กฎ 3: ภายในกลุ่มระดับเดียวกัน ให้เรียงตามชื่อ Description A-Z
         if (a.desc < b.desc) return -1;
         if (a.desc > b.desc) return 1;
-        
+
+        // กฎ 4: ถ้าชื่อ Description เหมือนกันเป๊ะ ให้ Personal นำหน้า Actual
         return (typeWeight[a.type] || 4) - (typeWeight[b.type] || 4);
     }).forEach(l => {
       const total = Object.values(l.months).reduce((a,b)=>a+b, 0);
